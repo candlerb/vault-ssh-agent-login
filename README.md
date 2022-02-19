@@ -23,9 +23,6 @@ go build .
 
 Usage
 -----
-You will need to login to Vault first, so that you have a token in
-`~/.vault-token` or in the environment variable `VAULT_TOKEN`
-
 Only the `-role` option is mandatory, although typically you'd also need to
 request one or more principals because of
 [this issue](https://github.com/hashicorp/vault/issues/10946).
@@ -56,6 +53,24 @@ vault-XXXXXXXX-<rolename>
 
 where `XXXXXXXX` is a CRC-32 of your `VAULT_ADDR`.
 
+Authentication
+--------------
+`vault-ssh-agent-login` needs a token to authenticate to Vault.
+
+If you have previously logged in using `vault login` then this token will be
+picked up from `~/.vault-token`.  You can also the the `VAULT_TOKEN`
+environment variable to override this.
+
+If your Vault server has an upstream OIDC auth method, then you can enable
+the built-in OIDC support in `vault-ssh-agent-login` with flag
+`-auth-method=oidc`.  This is currently the only built-in authentication
+method.
+
+In this mode, `vault-ssh-agent-login` will perform an OIDC login in a
+similar way to `vault login -method=oidc`, and use the fetched token for
+signing the certificate.  The token is discarded after use.
+
+
 Environment Settings
 --------------------
 The `VAULT_*` environment variables control communication with the Vault
@@ -81,11 +96,10 @@ Command line options
 | `-write-pubkey=`     | (unset)          | If set, public key will also be written to this file. Useful with IdentifyFile/IdentitiesOnly
 | `-write-cert=`       | (unset)          | If set, certificate will also be written to this file
 | `-token-file=`       | `~/.vault-token` | Location of existing token file to use
-| `-ssh-executable=`   | `ssh`            | Name of ssh command to invoke if extra arguments are provided
-<!--
 | `-auth-method=`      | (unset)          | If set, perform a Vault login instead of looking for existing token
-| `-auth-path=`        | (unset)          | For use with `-auth-method`, selects the auth mount path
--->
+| `-auth-path=`        | (auth-method)    | For use with `-auth-method`, selects the auth mount path
+| `-auth-role=`        | (role default)   | For use with `-auth-method`, selects the auth role
+| `-ssh-executable=`   | `ssh`            | Name of ssh command to invoke if extra arguments are provided
 
 Notes
 -----

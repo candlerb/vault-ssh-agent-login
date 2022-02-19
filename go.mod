@@ -4,6 +4,7 @@ go 1.17
 
 require (
 	github.com/hashicorp/vault/api v1.3.1
+	github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8
 	golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97
 )
 
