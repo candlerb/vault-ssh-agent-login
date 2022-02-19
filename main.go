@@ -13,11 +13,9 @@ import (
 	"net"
 	"net/http"
 	"os"
-	"os/exec"
 	"os/user"
 	"path/filepath"
 	"strings"
-	"syscall"
 	"time"
 
 	"github.com/hashicorp/vault/api"
@@ -44,21 +42,20 @@ TODO:
 
 type Config struct {
 	Force               bool
+	Quiet               bool
 	KeyComment          string
 	KeyConfirmBeforeUse bool
-	TTL                 string
 	MountPoint          string
 	Role                string
 	ValidPrincipals     string
 	Extensions          string
+	TTL                 string
 	WritePubkey         string
 	WriteCert           string
 	TokenFile           string
 	AuthMethod          string
 	AuthPath            string
 	AuthRole            string
-	SSHExecutable       string
-	SSHArgs             []string
 
 	vault *api.Client
 	agent agent.ExtendedAgent
@@ -78,45 +75,33 @@ func main() {
 		log.Printf("[ERROR] %s", err)
 		os.Exit(1)
 	}
-	// FIXME: This won't build for Windows. https://github.com/golang/go/issues/30662
-	if len(c.SSHArgs) > 0 {
-		cmd, err := exec.LookPath(c.SSHExecutable)
-		if err != nil {
-			log.Printf("[ERROR] Locating ssh executable: %v", err)
-			os.Exit(127)
-		}
-		argv := append([]string{c.SSHExecutable}, c.SSHArgs...)
-		if err := syscall.Exec(cmd, argv, os.Environ()); err != nil {
-			log.Printf("[ERROR] Exec ssh executable: %v", err)
-			os.Exit(127)
-		}
-	}
 	os.Exit(0)
 }
 
 func ParseArgs(c *Config, args []string) error {
 	flags := flag.NewFlagSet(args[0], flag.ContinueOnError)
 	flags.BoolVar(&c.Force, "force", false, "Force generation of new key/cert")
+	flags.BoolVar(&c.Quiet, "quiet", false, "Do not warn if no need to generate new key/cert")
 	flags.StringVar(&c.KeyComment, "key-comment", "", "Override comment for key+cert in ssh-agent keyring")
 	flags.BoolVar(&c.KeyConfirmBeforeUse, "key-confirm-before-use", false, "Tell agent to confirm before each use of key")
-	flags.StringVar(&c.TTL, "ttl", "", "Requested certificate TTL, e.g. '5m'")
 	flags.StringVar(&c.MountPoint, "mount-point", "ssh", "Mount path to the SSH secrets engine")
 	flags.StringVar(&c.Role, "role", "", "SSH CA signing role (required)")
 	flags.StringVar(&c.ValidPrincipals, "valid-principals", "", "List of certificate principals")
 	flags.StringVar(&c.Extensions, "extensions", "", "List of certificate extensions")
+	flags.StringVar(&c.TTL, "ttl", "", "Requested certificate TTL, e.g. '5m'")
 	flags.StringVar(&c.WritePubkey, "write-pubkey", "", "Write public key to given filename")
 	flags.StringVar(&c.WriteCert, "write-cert", "", "Write certificate to given filename")
 	flags.StringVar(&c.TokenFile, "token-file", "~/.vault-token", "Path to existing token")
 	flags.StringVar(&c.AuthMethod, "auth-method", "", "Auth type to use to fetch token")
 	flags.StringVar(&c.AuthPath, "auth-path", "", "Path to auth method")
 	flags.StringVar(&c.AuthRole, "auth-role", "default", "Role for auth method")
-	flags.StringVar(&c.SSHExecutable, "ssh-executable", "ssh", "Path to the ssh executable, if extra args provided")
 
 	if err := flags.Parse(args[1:]); err != nil {
 		return err
 	}
-
-	c.SSHArgs = flags.Args()
+	if len(flags.Args()) > 0 {
+		return fmt.Errorf("Spurious arguments at end of line")
+	}
 	return nil
 }
 
@@ -304,7 +289,7 @@ func Run(c *Config) error {
 	if !c.Force {
 		for _, key := range agentKeys {
 			if key.Comment == c.KeyComment {
-				if len(c.SSHArgs) == 0 {
+				if !c.Quiet {
 					log.Printf("[INFO] Found existing key with comment '%s'. Use -force to generate new key+cert", c.KeyComment)
 					// TODO: renew it anyway if due to expire in a few seconds?
 				}

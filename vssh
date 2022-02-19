@@ -1,0 +1,6 @@
+#!/bin/bash -eu
+export VAULT_ADDR="https://vault.example.net:8200"
+
+vault-ssh-agent-login -role=my-role -valid-principals="foo,bar" -quiet
+
+[ $# -gt 0 ] && ssh "$@"
