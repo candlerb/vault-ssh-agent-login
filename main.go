@@ -158,9 +158,19 @@ func Run(c *Config) error {
 	}
 
 	// Set up Vault credentials
-	err = VaultLogin(c)
+	revokeAfterUse, err := VaultLogin(c)
 	if err != nil {
 		return fmt.Errorf("Vault login: %v", err)
+	}
+	if revokeAfterUse {
+		defer func() {
+			err := c.vault.Auth().Token().RevokeSelf("")
+			if err != nil {
+				log.Printf("[WARN] Failed to revoke token: %v", err)
+			} else {
+				log.Printf("[INFO] Revoked token")
+			}
+		}()
 	}
 
 	// Validate token before burning entropy (assume default policy allows this)

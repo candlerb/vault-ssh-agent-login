@@ -16,16 +16,16 @@ import (
 )
 
 // Login to Vault
-func VaultLogin(c *Config) error {
+func VaultLogin(c *Config) (bool, error) {
 	switch c.AuthMethod {
 	case "":
-		return loginToken(c)
+		return false, loginToken(c)
 	case "oidc":
-		return loginOIDC(c)
+		return true, loginOIDC(c)
 	default:
-		return fmt.Errorf("Auth method unknown/not implemented")
+		return false, fmt.Errorf("Auth method unknown/not implemented")
 	}
-	return nil
+	return false, nil
 }
 
 // Login via token
@@ -144,6 +144,8 @@ func loginOIDC(c *Config) error {
 			return fmt.Errorf("OIDC result missing auth data")
 		}
 		c.vault.SetToken(result.secret.Auth.ClientToken)
+		log.Printf("[INFO] OIDC login successful: token accessor %s",
+			result.secret.Auth.Accessor)
 
 	case <-time.After(5 * time.Minute):
 		return fmt.Errorf("Timeout waiting for OIDC response")
