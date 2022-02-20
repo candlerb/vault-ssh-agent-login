@@ -80,7 +80,7 @@ server.  If you have `VAULT_TOKEN` in your environment then this is used,
 otherwise the token file at `~/.vault-token` is read in.
 
 Location of the ssh-agent is done via the `SSH_AUTH_SOCK` environment
-variable, which is normally already set in your shell enviornment.
+variable, which is normally already set in your shell environment.
 
 Command line options
 --------------------
