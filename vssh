@@ -1,6 +1,12 @@
 #!/bin/bash -eu
 export VAULT_ADDR="https://vault.example.net:8200"
 
-vault-ssh-agent-login -role=my-role -valid-principals="foo,bar" -quiet
+case "${1:-}" in
+"-force") OPT="-force"; shift ;;
+"")       OPT="" ;;
+*)        OPT="-quiet" ;;
+esac
+
+vault-ssh-agent-login -role=my-role -valid-principals="foo,bar" $OPT
 
 [ $# -gt 0 ] && ssh "$@"
