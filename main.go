@@ -181,7 +181,7 @@ func Run(c *Config) error {
 
 	// Generate new key pair
 	log.Printf("[INFO] Generating new key pair %s", c.KeyComment)
-	privKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	privKey, err := ecdsa.GenerateKey(elliptic.P384(), rand.Reader)
 	if err != nil {
 		return fmt.Errorf("Could not generate private key: %v", err)
 	}
