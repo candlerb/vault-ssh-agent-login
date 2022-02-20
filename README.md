@@ -18,7 +18,9 @@ vault ssh -mode=ca -use-ssh-agent ...
 Build
 -----
 ```
+go mod tidy
 go build .
+sudo cp vault-ssh-agent-login /usr/local/bin/
 ```
 
 Usage
