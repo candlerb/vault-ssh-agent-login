@@ -25,9 +25,14 @@ sudo cp vault-ssh-agent-login /usr/local/bin/
 
 Usage
 -----
-Only the `-role` option is mandatory, although typically you'd also need to
-request one or more principals because of
-[this issue](https://github.com/hashicorp/vault/issues/10946).
+
+Only the `-role` option is mandatory.  However, if the signing role does not
+have a `default_user` then you'll also need to request `-valid-principals`,
+or you'll end up with a certificate with no principals (which is not
+useful).
+
+> `default_user` is capable of template expansion since Vault v1.12; see
+> [issue 16350](https://github.com/hashicorp/vault/issues/16350).
 
 For ease of use it's a good idea to create a wrapper script, e.g.
 called `vssh`:
@@ -73,7 +78,7 @@ method.
 
 In this mode, `vault-ssh-agent-login` will perform an OIDC login in a
 similar way to `vault login -method=oidc`, and use the fetched token for
-signing the certificate.  The token is discarded after use.
+signing the certificate.  The token is revoked after use.
 
 Environment Settings
 --------------------
