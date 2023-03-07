@@ -117,6 +117,12 @@ in `~/.ssh/`, then you may exceed the maximum number of authentication
 attempts when talking to a remote host.  If that's a problem, you can write
 the public key to a file and use `-o IdentityFile=<filename>` and `-o IdentitiesOnly`
 
+To view the contents of the certificate in ssh-agent, you can use:
+
+```
+ssh-add -L | ssh-keygen -L -f -
+```
+
 Limitations
 -----------
 There is no support for retrieving the token from an external token helper.
