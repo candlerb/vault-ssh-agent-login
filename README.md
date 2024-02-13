@@ -127,6 +127,11 @@ Limitations
 -----------
 There is no support for retrieving the token from an external token helper.
 
-Licence
+License
 -------
-Licence is the same as Vault itself (MPL)
+License is MPL2.0, which is the license Vault itself used before changing to
+BSL.  I do not think that I used any code from Vault itself (but if I did,
+it would have been from before the relicensing).
+
+I took inspiration from [sshagentca](https://github.com/rorycl/sshagentca)
+which is MIT-licensed.
