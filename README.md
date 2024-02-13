@@ -43,7 +43,7 @@ export VAULT_ADDR="https://vault.example.net:8200"
 
 vault-ssh-agent-login -role=my-role -valid-principals="foo,bar" -quiet
 
-[ $# -gt 0 ] && ssh "$@"
+[ $# -gt 0 ] && exec ssh "$@"
 ```
 
 This script will also invoke ssh if you pass extra arguments to it.
@@ -79,6 +79,25 @@ method.
 In this mode, `vault-ssh-agent-login` will perform an OIDC login in a
 similar way to `vault login -method=oidc`, and use the fetched token for
 signing the certificate.  The token is revoked after use.
+
+Here is a slightly more sophisticated example script, which assumes you have
+your OIDC auth method mounted at path "google", and also allows forcing
+certificate renewal:
+
+```
+#!/bin/bash -eu
+export VAULT_ADDR="https://vault.example.net:8200"
+
+case "${1:-}" in
+"-force") OPT="-force"; shift ;;
+"")       OPT="" ;;
+*)        OPT="-quiet" ;;
+esac
+
+vault-ssh-agent-login -role=my-role -auth-method=oidc -auth-path=google $OPT
+
+[ $# -gt 0 ] && exec ssh "$@"
+```
 
 Environment Settings
 --------------------
